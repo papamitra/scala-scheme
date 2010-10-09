@@ -18,7 +18,7 @@ class ParserTestSuite extends FunSuite{
   }
 
   test("parse list"){
-    assert(ListExpr(List(StringExpr("test"), NumberExpr(1))) === parser.parse("(\"test\" 1)"))
+    assert(ListExpr(StringExpr("test"), NumberExpr(1)) === parser.parse("(\"test\" 1)"))
   }
 
   test("parse quote"){

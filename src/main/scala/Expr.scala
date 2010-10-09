@@ -14,3 +14,7 @@ case class StringExpr(str:String) extends Expr{
 case class NumberExpr(num:Int) extends Expr{
   override def toString = num.toString
 }
+
+object ListExpr{
+  def apply(exprs:Expr*) = new ListExpr(exprs.toList)
+}

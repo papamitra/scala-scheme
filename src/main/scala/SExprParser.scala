@@ -12,7 +12,7 @@ class SExprParser extends JavaTokenParsers {
   def string:Parser[StringExpr] = stringLiteral ^^ { case strregexp(str) => StringExpr(str)}
   def num:Parser[NumberExpr] = decimalNumber ^^ { case n => NumberExpr(n.toInt)}
   def list:Parser[ListExpr] = "("~> rep(expr) <~")" ^^ { case e => ListExpr(List() ++ e)}
-  def quoted:Parser[ListExpr] = "'"~>expr ^^ {case e => ListExpr(List(SymbolExpr("quote"), e))}
+  def quoted:Parser[ListExpr] = "'"~>expr ^^ {case e => ListExpr(SymbolExpr("quote"), e)}
   def symbol:Parser[SymbolExpr] = """[a-zA-Z_+-/*%$]\w*""".r ^^ { case e => SymbolExpr(e.toString)}
 
   def parse(text:String) = parseAll(expr, text) match{
