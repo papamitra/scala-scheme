@@ -7,23 +7,15 @@ class LispEval(var env:scala.collection.mutable.Map[SymbolExpr, Expr]){
 
   val operatorMap:Map[String, Expr => Expr] = Primitive.primitiveMap
 
-  def applyOperator(func: Expr, args: List[Expr]):Expr = {
-    func match{
-      case ListExpr(SymbolExpr("procedure") :: ListExpr(argsName:List[SymbolExpr]) :: body :: Nil) => 
-	val eval = new LispEval(env ++ (argsName zip args))
-	eval.eval(body)
-      case sym@SymbolExpr(str) =>
-	operatorMap.get(str) match {
-	  case Some(primFunc) => {
-	    primFunc(ListExpr(args))
-//	    primFunc(ListExpr(NumberExpr(3), NumberExpr(5)))
-//	    println("pass")
-//	    Primitive.plus(ListExpr(NumberExpr(3), NumberExpr(5)))
-//	    NumberExpr(8)
-	  }
-	  case None => applyOperator(env(sym), args)
-	}
-    }   
+  def applyOperator(func: Expr, args: List[Expr]):Expr = func match{
+    case ListExpr(SymbolExpr("procedure") :: ListExpr(argsName:List[SymbolExpr]) :: body :: Nil) => 
+      val evaluator = new LispEval(env ++ (argsName zip args))
+      evaluator.eval(body)
+    case sym@SymbolExpr(str) =>
+      operatorMap.get(str) match {
+	case Some(primFunc) => primFunc(ListExpr(args))
+	case None => applyOperator(env(sym), args)
+      }
   }
 
   def eval(expr : Expr): Expr = expr match {
