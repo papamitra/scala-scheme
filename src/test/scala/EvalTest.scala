@@ -32,7 +32,24 @@ class EvalTestSuite extends FunSuite{
 
   test("lambda test"){
     val eval = new LispEval
-    assert(eval.eval(ListExpr(List(SymbolExpr("lambda"), ListExpr(List(SymbolExpr("x"), SymbolExpr("y"))), ListExpr(List(SymbolExpr("x")))))) === 
-      ListExpr(List(SymbolExpr("procedure"), ListExpr(List(SymbolExpr("x"), SymbolExpr("y"))), ListExpr(List(SymbolExpr("x"))))))
+    assert(eval.eval(ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x"))) === 
+      ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
   }
+
+  test("apply test"){
+    import scala.collection.mutable.Map
+    val eval = new LispEval(Map(SymbolExpr("func") ->  ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x"))))
+    assert(eval.eval(ListExpr(SymbolExpr("func"), SymbolExpr("test"), SymbolExpr("test2"))) === SymbolExpr("test"))
+  }
+
+  test("apply lambda test"){
+    val eval = new LispEval
+    assert(eval.eval(ListExpr(SymbolExpr("set!"), SymbolExpr("func"), ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))) === 
+      ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
+    assert(eval.eval(ListExpr(SymbolExpr("func"), SymbolExpr("test"), SymbolExpr("test2"))) === SymbolExpr("test"))
+  }
+
+  
 }
+
+
