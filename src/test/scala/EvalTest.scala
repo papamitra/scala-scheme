@@ -56,7 +56,7 @@ class EvalTestSuite extends FunSuite{
     val parser = new SExprParser
     def parse(text:String) = parser.parse(text)
 
-    println("eval:"+eval.eval(parse("(+ 1 2 3)")))
+    println("eval:"+eval.eval(parse("(+ 1 2 7)")))
   }
 
   

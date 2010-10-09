@@ -15,11 +15,11 @@ class LispEval(var env:scala.collection.mutable.Map[SymbolExpr, Expr]){
       case sym@SymbolExpr(str) =>
 	operatorMap.get(str) match {
 	  case Some(primFunc) => {
-//	    primFunc(ListExpr(args))
+	    primFunc(ListExpr(args))
 //	    primFunc(ListExpr(NumberExpr(3), NumberExpr(5)))
-	    println("pass")
-	    Primitive.plus(ListExpr(NumberExpr(3), NumberExpr(5)))
-	    NumberExpr(8)
+//	    println("pass")
+//	    Primitive.plus(ListExpr(NumberExpr(3), NumberExpr(5)))
+//	    NumberExpr(8)
 	  }
 	  case None => applyOperator(env(sym), args)
 	}
