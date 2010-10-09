@@ -49,6 +49,16 @@ class EvalTestSuite extends FunSuite{
     assert(eval.eval(ListExpr(SymbolExpr("func"), SymbolExpr("test"), SymbolExpr("test2"))) === SymbolExpr("test"))
   }
 
+  test("+ test"){
+    val eval = new LispEval
+//    assert(eval.eval(ListExpr(SymbolExpr("+"), NumberExpr(3), NumberExpr(5))) === NumberExpr(8))
+    import Primitive._
+    val parser = new SExprParser
+    def parse(text:String) = parser.parse(text)
+
+    println("eval:"+eval.eval(parse("(+ 1 2 3)")))
+  }
+
   
 }
 

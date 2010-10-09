@@ -5,11 +5,13 @@ package org.nagoyahackathon.scalalisp
 object Primitive{
 //  def num(e:Expr) = e match { case NumberExpr(n) => n}
 
-  def plus(exprs:Expr) = exprs match {
+  def plus(exprs:Expr) = {
+    println("plus"+exprs)
+    exprs match {
     case ListExpr(xs:List[NumberExpr]) =>
       NumberExpr((0 /: xs)(_ + _.num))
     case _ => throw new Exception("plus type miss match")
-  }
+  }}
 
   def times(exprs:Expr) = exprs match {
     case ListExpr(xs:List[NumberExpr]) =>
