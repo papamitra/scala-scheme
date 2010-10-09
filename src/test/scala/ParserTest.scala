@@ -19,22 +19,23 @@ class ParserTestSuite extends FunSuite{
 
   test("parse list"){
     assert(ListExpr(StringExpr("test"), NumberExpr(1)) === parser.parse("(\"test\" 1)"))
+    assert(ListExpr() === parser.parse("()"))
   }
 
   test("parse quote"){
-    assert(ListExpr(List(SymbolExpr("quote"), ListExpr(List(NumberExpr(1), NumberExpr(2), NumberExpr(3))))) === 
+    assert(ListExpr(SymbolExpr("quote"), ListExpr(NumberExpr(1), NumberExpr(2), NumberExpr(3))) === 
       parser.parse("'(1 2 3)"))
   }
 
   test("parse all"){
-    assert(ListExpr(List(SymbolExpr("apply"), SymbolExpr("+"),
-			 ListExpr(List(SymbolExpr("quote"),
-				       ListExpr(List(NumberExpr(1), NumberExpr(2), NumberExpr(3))))))) ===
-			   parser.parse("(apply + '(1 2 3))"))
+    assert(ListExpr(SymbolExpr("apply"), SymbolExpr("+"),
+		    ListExpr(SymbolExpr("quote"),
+			     ListExpr(NumberExpr(1), NumberExpr(2), NumberExpr(3)))) ===
+			       parser.parse("(apply + '(1 2 3))"))
 
-    assert(ListExpr(List(SymbolExpr("apply"), SymbolExpr("+"),
-			 ListExpr(List(SymbolExpr("quote"),
-				       ListExpr(List(NumberExpr(1), NumberExpr(2), NumberExpr(3))))))) ===
+    assert(ListExpr(SymbolExpr("apply"), SymbolExpr("+"),
+		    ListExpr(SymbolExpr("quote"),
+			     ListExpr(NumberExpr(1), NumberExpr(2), NumberExpr(3)))) ===
 			   parser.parse("""(apply + 
 					'(1
 					2
