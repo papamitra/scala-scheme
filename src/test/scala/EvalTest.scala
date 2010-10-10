@@ -5,6 +5,7 @@ import org.scalatest.FunSuite
 
 
 class EvalTestSuite extends FunSuite{
+  import SExprParser._
   test("Number test"){
     val eval = new LispEval
     assert(eval.eval(NumberExpr(3)) === NumberExpr(3))
@@ -17,13 +18,13 @@ class EvalTestSuite extends FunSuite{
 
   test("quote test"){
     val eval = new LispEval
-    assert(eval.eval(ListExpr(List(SymbolExpr("quote"), NumberExpr(3)))) === NumberExpr(3))
+    assert(eval.eval(listExpr(List(SymbolExpr("quote"), NumberExpr(3)))) === NumberExpr(3))
   }
 
   test("assign test"){
     val eval = new LispEval
     assert(
-      eval.eval(ListExpr(List(
+      eval.eval(listExpr(List(
 	SymbolExpr("set!"), SymbolExpr("x"), NumberExpr(3)))) === NumberExpr(3))
 
     assert(eval.eval(SymbolExpr("x")) === NumberExpr(3))
@@ -31,8 +32,8 @@ class EvalTestSuite extends FunSuite{
 
   test("lambda test"){
     val eval = new LispEval
-    assert(eval.eval(ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x"))) === 
-      ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
+    assert(eval.eval(listExpr(List(SymbolExpr("lambda"), listExpr(List(SymbolExpr("x"), SymbolExpr("y"))), SymbolExpr("x")))) === 
+      listExpr(List(SymbolExpr("procedure"), listExpr(List(SymbolExpr("x"), SymbolExpr("y"))), SymbolExpr("x"))))
   }
 /*
   test("apply test"){
@@ -43,9 +44,9 @@ class EvalTestSuite extends FunSuite{
 */
   test("apply lambda test"){
     val eval = new LispEval
-    assert(eval.eval(ListExpr(SymbolExpr("set!"), SymbolExpr("func"), ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))) === 
-      ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
-    assert(eval.eval(ListExpr(SymbolExpr("func"), SymbolExpr("test"), SymbolExpr("test2"))) === SymbolExpr("test"))
+    assert(eval.eval(listExpr(List(SymbolExpr("set!"), SymbolExpr("func"), listExpr(List(SymbolExpr("lambda"), listExpr(List(SymbolExpr("x"), SymbolExpr("y"))), SymbolExpr("x")))))) === 
+      listExpr(List(SymbolExpr("procedure"), listExpr(List(SymbolExpr("x"), SymbolExpr("y"))), SymbolExpr("x"))))
+    assert(eval.eval(listExpr(List(SymbolExpr("func"), SymbolExpr("test"), SymbolExpr("test2")))) === SymbolExpr("test"))
   }
 
   test("+ test"){

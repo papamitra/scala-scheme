@@ -16,21 +16,26 @@ class UpdatableMap[A, B] (var map:scala.collection.mutable.Map[A, Container[B]])
 }
 
 class LispEval(var env:UpdatableMap[SymbolExpr, Expr]){
-
+  import SExprParser._
 
   def this(){
     this(new UpdatableMap[SymbolExpr, Expr]())
   }
 
+  def zip(a:Expr, b:Expr):List[(SymbolExpr,Expr)] = (a,b) match{
+    case (ConsExpr(x:SymbolExpr,xs), ConsExpr(y,ys)) => List((x,y)) ++ zip(xs,ys)
+    case _ => Nil
+  }
+
   val operatorMap:Map[String, Expr => Expr] = Primitive.primitiveMap
 
-  def applyOperator(func: Expr, args: List[Expr]):Expr = func match{
-    case ListExpr(SymbolExpr("procedure") :: ListExpr(argsName:List[SymbolExpr]) :: body :: Nil) => 
-      val evaluator = new LispEval(env ++ (argsName zip args))
+  def applyOperator(func: Expr, args: Expr):Expr = func match{
+    case ConsExpr(SymbolExpr("procedure"), ConsExpr(argsName:Expr,ConsExpr(body,NilExpr))) => 
+      val evaluator = new LispEval(env ++ zip(argsName,args))
       evaluator.eval(body)
     case sym@SymbolExpr(str) =>
       operatorMap.get(str) match {
-	case Some(primFunc) => primFunc(ListExpr(args))
+	case Some(primFunc) => primFunc(args)
 	case None => applyOperator(env(sym), args)
       }
   }
@@ -39,12 +44,12 @@ class LispEval(var env:UpdatableMap[SymbolExpr, Expr]){
     case num:NumberExpr => num
     case str:StringExpr => str
     case sym:SymbolExpr => env(sym)
-    case ListExpr(SymbolExpr("quote") :: second :: Nil) => second
-    case ListExpr(SymbolExpr("set!") :: (name : SymbolExpr) :: (value : Expr) :: Nil) => 
+    case ConsExpr(SymbolExpr("quote"), ConsExpr(x,_)) => x
+    case ConsExpr(SymbolExpr("set!"), ConsExpr(name : SymbolExpr, ConsExpr(value : Expr, NilExpr))) => 
       env += (name -> eval(value))
       env(name)
-    case ListExpr(SymbolExpr("lambda") :: (args : ListExpr) :: (body : Expr) :: Nil) => ListExpr(SymbolExpr("procedure"), args, body)
-    case ListExpr((operator : SymbolExpr) :: rest) =>
+    case ConsExpr(SymbolExpr("lambda") ,ConsExpr(args : Expr, ConsExpr(body : Expr, NilExpr))) => listExpr(List(SymbolExpr("procedure"), args, body))
+    case ConsExpr(operator : SymbolExpr, rest) =>
       applyOperator(operator, rest)
 
     case _ => throw new Exception("Unknown Token:" + expr)
