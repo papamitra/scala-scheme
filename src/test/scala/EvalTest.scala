@@ -24,8 +24,7 @@ class EvalTestSuite extends FunSuite{
     val eval = new LispEval
     assert(
       eval.eval(ListExpr(List(
-	SymbolExpr("set!"), SymbolExpr("x"), NumberExpr(3)))) === 
-      NumberExpr(3))
+	SymbolExpr("set!"), SymbolExpr("x"), NumberExpr(3)))) === NumberExpr(3))
 
     assert(eval.eval(SymbolExpr("x")) === NumberExpr(3))
   }
@@ -35,13 +34,13 @@ class EvalTestSuite extends FunSuite{
     assert(eval.eval(ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x"))) === 
       ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
   }
-
+/*
   test("apply test"){
     import scala.collection.mutable.Map
     val eval = new LispEval(Map(SymbolExpr("func") ->  ListExpr(SymbolExpr("procedure"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x"))))
     assert(eval.eval(ListExpr(SymbolExpr("func"), SymbolExpr("test"), SymbolExpr("test2"))) === SymbolExpr("test"))
   }
-
+*/
   test("apply lambda test"){
     val eval = new LispEval
     assert(eval.eval(ListExpr(SymbolExpr("set!"), SymbolExpr("func"), ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))) === 

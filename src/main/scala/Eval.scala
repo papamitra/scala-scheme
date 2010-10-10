@@ -1,8 +1,25 @@
 package org.nagoyahackathon.scalalisp
 
-class LispEval(var env:scala.collection.mutable.Map[SymbolExpr, Expr]){
+private[scalalisp] class Container[T](var x:T)
+class UpdatableMap[A, B] (var map:scala.collection.mutable.Map[A, Container[B]]){
+  def this() = this(scala.collection.mutable.Map[A, Container[B]]())
+
+  def apply(key:A):B = map(key).x
+  def += (kv : (A, B)) = {
+    if(map.isDefinedAt(kv._1)) 
+      map(kv._1).x = kv._2
+    else
+      map += (kv._1 -> new Container(kv._2))
+    kv._2
+  }
+  def ++ (xs : Seq[(A, B)]) = new UpdatableMap(map ++ (xs map {case (key, value) => (key, new Container(value))}))
+}
+
+class LispEval(var env:UpdatableMap[SymbolExpr, Expr]){
+
+
   def this(){
-    this(scala.collection.mutable.Map[SymbolExpr, Expr]())
+    this(new UpdatableMap[SymbolExpr, Expr]())
   }
 
   val operatorMap:Map[String, Expr => Expr] = Primitive.primitiveMap
