@@ -31,10 +31,10 @@ object Primitive{
 
   implicit def tableItem(tpl:(String, Expr=>Expr)) = {
     val (str, func) = tpl
-    (SymbolExpr(str), func)
+    (SymbolExpr(str), PrimitiveExpr(func))
   }
 
-  val primitiveMap = Map(
+  val primitiveMap = Map[SymbolExpr, Expr](
     "+" -> plus _,
     "*" -> times _,
     "null?" -> isNull _

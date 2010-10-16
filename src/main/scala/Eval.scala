@@ -1,56 +1,35 @@
 package org.nagoyahackathon.scalalisp
 
-private[scalalisp] class Container[T](var x:T)
-class UpdatableMap[A, B] (var map:scala.collection.mutable.Map[A, Container[B]]){
-  def this() = this(scala.collection.mutable.Map[A, Container[B]]())
-
-  def apply(key:A):B = map(key).x
-  def += (kv : (A, B)) = {
-    if(map.isDefinedAt(kv._1)) 
-      map(kv._1).x = kv._2
-    else
-      map += (kv._1 -> new Container(kv._2))
-    kv._2
-  }
-  def ++ (xs : Seq[(A, B)]) = new UpdatableMap(map ++ (xs map {case (key, value) => (key, new Container(value))}))
-}
-
-class LispEval(var env:UpdatableMap[SymbolExpr, Expr]){
+class LispEval{
   import SExprParser._
 
-  def this(){
-    this(new UpdatableMap[SymbolExpr, Expr]())
+  var env = Env.initEnv
+
+  def map(e:Expr)(f:Expr=>Expr):Expr = e match{
+    case ConsExpr(x,xs) => ConsExpr(f(x), map(xs)(f))
+    case NilExpr => NilExpr
+    case _ => throw new Exception("bad map:" + e.toString)
   }
 
-  def zip(a:Expr, b:Expr):List[(SymbolExpr,Expr)] = (a,b) match{
-    case (ConsExpr(x:SymbolExpr,xs), ConsExpr(y,ys)) => List((x,y)) ++ zip(xs,ys)
-    case _ => Nil
+  def applyProc(proc:Expr, args:Expr) = proc match{
+    case PrimitiveExpr(f) => f(args)
+    case ProcExpr(params,body,env) =>
+      val exenv = Env.extend(params, args, env)
+      eval(body, exenv)
+    case _ => throw new Exception("bad apply" + proc.toString)
   }
 
-  val operatorMap:Map[String, Expr => Expr] = Primitive.primitiveMap
-
-  def applyOperator(func: Expr, args: Expr):Expr = func match{
-    case ConsExpr(SymbolExpr("procedure"), ConsExpr(argsName:Expr,ConsExpr(body,NilExpr))) => 
-      val evaluator = new LispEval(env ++ zip(argsName,args))
-      evaluator.eval(body)
-    case sym@SymbolExpr(str) =>
-      operatorMap.get(str) match {
-	case Some(primFunc) => primFunc(args)
-	case None => applyOperator(env(sym), args)
-      }
-  }
-
-  def eval(expr : Expr): Expr = expr match {
+  def eval(expr:Expr, env:Env=env):Expr = expr match {
     case num:NumberExpr => num
     case str:StringExpr => str
-    case sym:SymbolExpr => env(sym)
-    case ConsExpr(SymbolExpr("quote"), ConsExpr(x,_)) => x
-    case ConsExpr(SymbolExpr("set!"), ConsExpr(name : SymbolExpr, ConsExpr(value : Expr, NilExpr))) => 
-      env += (name -> eval(value))
-      env(name)
-    case ConsExpr(SymbolExpr("lambda") ,ConsExpr(args : Expr, ConsExpr(body : Expr, NilExpr))) => listExpr(List(SymbolExpr("procedure"), args, body))
-    case ConsExpr(operator : SymbolExpr, rest) =>
-      applyOperator(operator, rest)
+    case sym:SymbolExpr => env.lookup(sym)
+    case ListExpr(SymbolExpr("quote"), x) => x
+    case ListExpr(SymbolExpr("define"), vr:SymbolExpr, vl) => env.defVar(vr, eval(vl,env))
+    case ListExpr(SymbolExpr("set!"), name : SymbolExpr, value : Expr) => 
+      env.setVar(name, eval(value,env))
+    case ListExpr(SymbolExpr("lambda") ,args:Expr, body:Expr) => ProcExpr(args, body, env)
+    case ConsExpr(operator, operands) =>
+      applyProc(eval(operator,env), map(operands)(eval(_,env)) )
 
     case _ => throw new Exception("Unknown Token:" + expr)
   }

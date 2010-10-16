@@ -6,7 +6,15 @@ import scala.util.parsing.combinator._
 
 class ParserTestSuite extends FunSuite{  
   val parser = new SExprParser
-    
+
+  def listGen(exprs:Expr*) = {
+    def proc(lst:List[Expr]):Expr = lst match{
+      case x :: xs => ConsExpr(x, proc(xs))
+      case Nil => NilExpr
+    }
+    proc(exprs.toList)
+  }
+
   test("parse string"){
     assert(StringExpr("test") === parser.parse("\"test\""))
     assert(StringExpr("") === parser.parse("\"\""))
@@ -23,6 +31,7 @@ class ParserTestSuite extends FunSuite{
 
   test("parse list"){
     assert(ConsExpr(StringExpr("test"), ConsExpr(NumberExpr(1), NilExpr)) === parser.parse("(\"test\" 1)"))
+    assert(listGen(listGen(SymbolExpr("lambda"), listGen(SymbolExpr("x")), listGen(SymbolExpr("+"), SymbolExpr("x"), NumberExpr(1))), NumberExpr(1)) === parser.parse("((lambda (x) (+ x 1)) 1)"))
   }
 
   test("parse quote"){
