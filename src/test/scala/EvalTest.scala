@@ -33,9 +33,9 @@ class EvalTestSuite extends FunSuite{
 
   test("lambda test"){
     val eval = new LispEval
-    val ProcExpr(args, body, _) = eval.eval(ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
+    val LambdaExpr(args, body, _) = eval.eval(ListExpr(SymbolExpr("lambda"), ListExpr(SymbolExpr("x"), SymbolExpr("y")), SymbolExpr("x")))
     assert(args === ListExpr(SymbolExpr("x"), SymbolExpr("y")))
-    assert(body === SymbolExpr("x"))
+    assert(body === ListExpr(SymbolExpr("x")))
 
   }
 
@@ -58,5 +58,3 @@ class EvalTestSuite extends FunSuite{
   }
 
 }
-
-

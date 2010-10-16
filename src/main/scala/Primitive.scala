@@ -29,14 +29,38 @@ object Primitive{
     case _ => throw new Exception("car error")
   }
 
-  implicit def tableItem(tpl:(String, Expr=>Expr)) = {
+  def cdr(exprs:Expr) = exprs match {
+    case ConsExpr(x,xs) => xs
+    case _ => throw new Exception("cdr error")
+  }
+
+  def minus(exprs:Expr):NumberExpr = exprs match{
+    case ListExpr(x:NumberExpr,y:NumberExpr) => NumberExpr(x.num - y.num)
+    case _ => throw new Exception("minus error")
+  }
+
+  def equal(exprs:Expr):Expr = exprs match {
+    case ListExpr(x:NumberExpr, y:NumberExpr) => 
+      if (x.num == y.num){
+	SymbolExpr("true")
+      }else{
+	SymbolExpr("false")
+      }
+    case _ => throw new Exception("equal error")
+  }
+
+  def tableRow(tpl:(String, Expr=>Expr)) = {
     val (str, func) = tpl
     (SymbolExpr(str), PrimitiveExpr(func))
   }
 
-  val primitiveMap = Map[SymbolExpr, Expr](
+  val primitiveMap = List(
     "+" -> plus _,
+    "-" -> minus _,
     "*" -> times _,
-    "null?" -> isNull _
-    )
+    "=" -> equal _,
+    "null?" -> isNull _,
+    "car" -> car _,
+    "cdr" -> cdr _
+    ).map(tableRow(_)).toMap
 }

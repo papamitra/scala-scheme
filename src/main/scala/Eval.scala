@@ -1,8 +1,6 @@
 package org.nagoyahackathon.scalalisp
 
 class LispEval{
-  import SExprParser._
-
   var env = Env.initEnv
 
   def map(e:Expr)(f:Expr=>Expr):Expr = e match{
@@ -11,13 +9,15 @@ class LispEval{
     case _ => throw new Exception("bad map:" + e.toString)
   }
 
-  def applyProc(proc:Expr, args:Expr) = proc match{
+  def apply(proc:Expr, args:Expr) = proc match{
     case PrimitiveExpr(f) => f(args)
-    case ProcExpr(params,body,env) =>
+    case LambdaExpr(params,body,env) =>
       val exenv = Env.extend(params, args, env)
-      eval(body, exenv)
+      evalSequence(body, exenv)
     case _ => throw new Exception("bad apply" + proc.toString)
   }
+
+//  def seqToCons(seq:Seq[Expr]):Expr = (seq :\ (NilExpr:Expr))(ConsExpr(_,_))
 
   def eval(expr:Expr, env:Env=env):Expr = expr match {
     case num:NumberExpr => num
@@ -25,13 +25,34 @@ class LispEval{
     case sym:SymbolExpr => env.lookup(sym)
     case ListExpr(SymbolExpr("quote"), x) => x
     case ListExpr(SymbolExpr("define"), vr:SymbolExpr, vl) => env.defVar(vr, eval(vl,env))
-    case ListExpr(SymbolExpr("set!"), name : SymbolExpr, value : Expr) => 
+    case ConsExpr(SymbolExpr("define"), ConsExpr(ConsExpr(vr:SymbolExpr, params), body)) =>
+      env.defVar(vr, LambdaExpr(params, body, env))
+    case ListExpr(SymbolExpr("set!"), name : SymbolExpr, value : Expr) =>
       env.setVar(name, eval(value,env))
-    case ListExpr(SymbolExpr("lambda") ,args:Expr, body:Expr) => ProcExpr(args, body, env)
+    case ConsExpr(SymbolExpr("if"), ConsExpr(pred, ConsExpr(conseq, alt))) =>
+      if(eval(pred,env) != SymbolExpr("false")){
+	eval(conseq,env)
+      }else{
+	alt match{
+	  case ConsExpr(x,_) => eval(x,env)
+	  case NilExpr => SymbolExpr("false")
+	  case _ => throw new Exception("if error")
+	}
+      }
+    case ConsExpr(SymbolExpr("lambda") ,ConsExpr(args:Expr, body)) => LambdaExpr(args, body, env)
     case ConsExpr(operator, operands) =>
-      applyProc(eval(operator,env), map(operands)(eval(_,env)) )
+      apply(eval(operator,env), map(operands)(eval(_,env)) )
 
     case _ => throw new Exception("Unknown Token:" + expr)
   }
+
+  def evalSequence(expr:Expr, env:Env):Expr = expr match{
+    case ConsExpr(x,NilExpr) => eval(x,env)
+    case ConsExpr(x, xs) =>
+      eval(x,env)
+      evalSequence(xs,env)
+    case _ => throw new Exception("evalSequence Error")
+  }
+
 }
 

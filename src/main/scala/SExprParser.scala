@@ -14,7 +14,7 @@ class SExprParser extends JavaTokenParsers {
   def nil:Parser[Expr] = "("~")" ^^ {case _ => NilExpr}
   def list:Parser[Expr] = "("~> rep(expr) <~")" ^^ {case e => listExpr(e)}
   def quoted:Parser[Expr] = "'"~>expr ^^ {case e => ConsExpr(SymbolExpr("quote"), ConsExpr(e, NilExpr))}
-  def symbol:Parser[SymbolExpr] = """[a-zA-Z_+-/*%$#]\w*""".r ^^ { case e => SymbolExpr(e.toString)}
+  def symbol:Parser[SymbolExpr] = """[a-zA-Z_+-/*%$#=]\w*""".r ^^ { case e => SymbolExpr(e.toString)}
 
   def parse(text:String) = parseAll(expr, text) match{
     case Success(e, _) => e
